@@ -1,0 +1,79 @@
+@model Post
+
+@{
+    ViewData["Title"] = "Main Page";
+}
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+            authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+            databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+            projectId: "dotnetsocialmedia-df2ee",
+            storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+            messagingSenderId: "630837754281",
+            appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+            measurementId: "G-VCEN603ERC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const postsRef = dbRef(database, 'Posts');
+
+        function loadPosts() {
+            onValue(postsRef, (snapshot) => {
+                const posts = snapshot.val();
+                const table = document.getElementById('postTable');
+                table.innerHTML = '';
+
+                if (posts) {
+                    Object.keys(posts).forEach(id => {
+                        const post = posts[id];
+                        const row = table.insertRow();
+                        row.insertCell(0).innerHTML = `<h3>${post.title}</h3><p>${post.userId}</p><p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`
+                        +`<p><button onclick="deletePost('${id}');" data-mdb-button-init data-mdb-ripple-init class="btn btn-danger">Delete</button></p>`
+                        +`<form action="EditPost" method="post">`
+                        +`<input name="postId" type="hidden" value="${id}"/>`
+                        +`<input name="userId" type="hidden" value="${post.userId}"/>`
+                        +`<input name="title" type="hidden" value="${post.title}"/>`
+                        +`<input name="content" type="hidden" value="${post.content}"/>`
+                        +`<input name="imgURL" type="hidden" value="${post.imgURL}"/>`
+                        +`<button type="submit" class="btn btn-primary">Edit</button>`
+                        +`</form>`
+                    });
+                }
+            });
+        }
+
+        async function deletePost(postId) {
+            try {
+                const postRef = dbRef(database, 'Posts/' + postId);
+                await remove(postRef);
+                console.log('Post deleted ');
+            } catch (error) {
+                console.error('Error message: ', error);
+            }
+        }
+
+        window.deletePost = function (id) {
+            deletePost(id);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPosts();
+        });
+
+
+</script>
+
+<table class="table" id="postTable">
+        <tr>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
+
+</table>

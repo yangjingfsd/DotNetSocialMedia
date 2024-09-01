@@ -1,0 +1,78 @@
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+    authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+    databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+    projectId: "dotnetsocialmedia-df2ee",
+    storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+    messagingSenderId: "630837754281",
+    appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+    measurementId: "G-VCEN603ERC"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  document.getElementById("signupForm").addEventListener("submit",function(event){
+    event.preventDefault();
+    
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+    
+    createUserWithEmailAndPassword(auth,email,password)
+    .then((userCredential)=>{
+        alert("Signup successfully!");
+        window.location.href="/Main/homepage";
+    })
+    .catch((error)=>{
+      alert(error.message);
+    });
+  });
+
+</script>
+
+    <div style='margin:auto;width:25%;' >
+
+        <h3> Please sign up </h3>
+
+        <form id="signupForm">
+
+            <table style='border-collapse:separate;border-spacing:10px;width:100%;'>
+                <tr>
+                    <td>
+                        <div class="form-outline" data-mdb-input-init>
+                            <input type="email" id="signupEmail" class="form-control" required="required"/>
+                            <label class="form-label" for="signupEmail">Email</label>
+                          </div>        
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-outline" data-mdb-input-init>
+                            <input type="password" id="signupPassword" class="form-control" required="required" />
+                            <label class="form-label" for="signupPassword">Password</label>
+                          </div>
+                    </td>
+                        </tr>
+                <tr>
+                    <td align="right">
+                        <button type="submit" class="btn btn-success" data-mdb-ripple-init>Sign Up</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+    </div>
+
+
+
+

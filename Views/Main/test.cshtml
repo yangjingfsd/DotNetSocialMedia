@@ -1,0 +1,88 @@
+@model Post
+
+
+@* <form asp-action="EditPost" method="post">
+
+<div class="form-group">
+    <label asp-for="postId">postId: </label>
+    <input asp-for="postId" class="form-control" value="postId someid"/>
+    <span asp-validation-for="postId" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="userId">userId: </label>
+    <input asp-for="userId" class="form-control" value="userId someid"/>
+    <span asp-validation-for="userId" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="title">title: </label>
+    <input asp-for="title" class="form-control" value="ptittlle  dsfkjasdf  someid"/>
+    <span asp-validation-for="title" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="content">content: </label>
+    <input asp-for="content" class="form-control" value="some ahsdfasdf p  someid"/>
+    <span asp-validation-for="content" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="imgURL">imgURL: </label>
+    <input asp-for="imgURL" class="form-control" value="https://www.google.com/logos/doodles/2024/paris-games-archery-6753651837110536-s.png"/>
+    <span asp-validation-for="imgURL" class="text-danger"></span>
+</div>
+<br>
+<button type="submit" class="btn btn-primary">Submit</button>
+
+</form>
+ *@
+
+<form asp-action="EditPost" method="post">
+
+<div class="form-group">
+    <label asp-for="postId">Post ID: </label>
+    <input asp-for="postId" class="form-control"/>
+</div>
+
+<div class="form-group">
+    <label asp-for="userId">User ID: </label>
+    <input asp-for="userId" class="form-control"/>
+</div>
+
+<div class="form-group">
+    <label asp-for="title">Title: </label>
+    <input asp-for="title" class="form-control"/>
+</div>
+
+<div class="form-group">
+    <label asp-for="content">content: </label>
+    <input asp-for="content" class="form-control"/>
+</div>
+
+<div class="form-group">
+    <label asp-for="imgURL">imgURL: </label>
+    <input asp-for="imgURL" class="form-control"/>
+</div>
+
+<br>
+<button type="submit" class="btn btn-primary">Submit</button>
+
+</form>
+
+
+@* <form asp-action="/Main/EditPost" method="post">
+<input name="postId" type="text"/>
+<br/>
+<input name="userId" type="text"/>
+<br/>
+<input name="title" type="text" />
+<br/>
+<input name="content" type="text" />
+<br/>
+<input name="imgURL" type="text"/>
+<br/>
+
+<button type="submit" >Edit</button>
+</form>
+ *@

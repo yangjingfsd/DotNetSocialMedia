@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<script type="module">
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+    authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+    databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+    projectId: "dotnetsocialmedia-df2ee",
+    storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+    messagingSenderId: "630837754281",
+    appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+    measurementId: "G-VCEN603ERC"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  document.getElementById("loginForm").addEventListener("submit",function(event){
+    event.preventDefault();
+    
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    
+    signInWithEmailAndPassword(auth,email,password)
+    .then((userCredential)=>{
+        alert("Login successfully!");
+        window.location.href="/Main/homepage";
+    })
+    .catch((error)=>{
+      alert(error.message);
+    });
+  });
+
+document.getElementById("loginWithGoogle").onclick = function () { 
+
+signInWithPopup(auth, provider)
+  .then((result) => {
+    // This gives you a Google Access Token. You can use it to access the Google API.
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential.accessToken;
+    // The signed-in user info.
+    const user = result.user;
+    // IdP data available using getAdditionalUserInfo(result)
+    // ...
+//    self.close();
+    window.location.href="/Main/homepage";
+//    alert(user.name);
+  }).catch((error) => {
+    // Handle Errors here.
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // The email of the user's account used.
+    const email = error.customData.email;
+    // The AuthCredential type that was used.
+    const credential = GoogleAuthProvider.credentialFromError(error);
+    // ...
+  });
+
+};
+
+</script>
+
+    <div id="signin" style='margin:auto;width:25%;' >
+
+        <h3> Please log in </h3>
+
+        <form id="loginForm">
+
+
+            <table id="signinform" style='border-collapse:separate;border-spacing:10px;width:100%;'>
+                <tr>
+                    <td>
+                        <div class="form-outline" data-mdb-input-init>
+                            <input type="email" id="loginEmail" class="form-control" required="required"/>
+                            <label class="form-label" for="loginEmail">Email</label>
+                          </div>        
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="form-outline" data-mdb-input-init>
+                            <input type="password" id="loginPassword" class="form-control" required="required" />
+                            <label class="form-label" for="loginPassword">Password</label>
+                          </div>
+                    </td>
+                        </tr>
+                <tr>
+                    <td align="right">
+                        <button type="submit" class="btn btn-success" data-mdb-ripple-init>Log In</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        
+
+    </div>
+
+<br/>
+
+<div>Don't have an account? Sign Up <a href="/Home/Signup">here</a>.</div>
+<br/>
+<p>-------------------------------------------- or --------------------------------------------</p>
+<br/>
+<div>Log in with <button id="loginWithGoogle" type="button" class="btn btn-danger" data-mdb-ripple-init>Google Account</button></div>
+
+

@@ -1,0 +1,257 @@
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+     <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+            authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+            databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+            projectId: "dotnetsocialmedia-df2ee",
+            storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+            messagingSenderId: "630837754281",
+            appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+            measurementId: "G-VCEN603ERC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const storage = getStorage(app);
+
+        const usersRef = dbRef(database, 'Users');
+        const addprofile = document.getElementById('addProfile');
+        const editprofile = document.getElementById('editProfile');
+        const profile = document.getElementById('profileList');
+
+        async function addUser(firstName, lastName, nickName, email, picURL) {
+            try {
+                const newUserRef = push(usersRef);
+                await set(newUserRef, {firstName, lastName, nickName, email, picURL});
+                console.log('User created!');
+            } catch (error) {
+                console.error('Error message: ', error);
+            }
+        }
+
+         async function updatUser(userId, firstName, lastName, nickName, email, picURL) {
+            try {
+                const userRef = dbRef(database, 'Users/' + userId);
+                await update(userRef, {firstName, lastName, nickName, email, picURL});
+                console.log('User updated');
+                window.location.href="/Main/Profile";
+            } catch (error) {
+                console.error('Error message: ', error);
+            }
+        }
+
+        window.editUser = function (userId, firstName, lastName, nickName, email, picURL) {
+
+            editprofile.style.display = 'revert'; 
+            profile.style.display = 'none';
+
+            document.getElementById('EuserId').value = userId;
+            document.getElementById('EfirstName').value = firstName;
+            document.getElementById('ElastName').value = lastName;
+            document.getElementById('EnickName').value = nickName;
+            document.getElementById('Eemail').value = email;
+            document.getElementById('EprofilePic').src = picURL;
+
+            document.getElementById('updateUserForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const firstName = document.getElementById('EfirstName').value;
+                const lastName = document.getElementById('ElastName').value;
+                const nickName = document.getElementById('EnickName').value;
+                const email = document.getElementById('Eemail').value;
+
+                const picFile = document.getElementById('EpicFile');
+                const file = picFile.files[0];  
+
+                if(file){
+
+                    const imgRef = storageRef(storage, `images/${file.name}`);
+
+                try{
+                
+                    uploadBytes(imgRef, file).then((snapshot) => {
+
+                    getDownloadURL(snapshot.ref).then((downloadURL) => {
+                    updatUser(userId, firstName, lastName, nickName, email, downloadURL);
+
+                });
+                });
+                
+                } catch(error) {
+                
+                alert('Upload failed:', error);
+                
+                }
+
+                }   else {
+
+                updatUser(userId, firstName, lastName, nickName, email, picURL);
+
+                }
+               
+            });
+
+        };
+
+        function loadProfile() {
+            onValue(usersRef, (snapshot) => {
+                const users = snapshot.val();
+                profile.innerHTML = '';
+
+                if (users) {
+                    Object.keys(users).forEach(id => {
+                        const user = users[id];
+
+                        addprofile.style.display = 'none'; 
+                        editprofile.style.display = 'none'; 
+
+                        profile.innerHTML = `<ul class="list-group list-group-light">`
+                        +`<li class="list-group-item d-flex justify-content-between align-items-center">`
+                        +`<div class="d-flex align-items-center">`
+                        +`<img src=${user.picURL} alt="" style="width: 45px; height: 45px" class="rounded-circle" />`
+                        +`<div class="ms-3">`
+                        +`<p class="fw-bold mb-1">${user.firstName} ${user.lastName}</p>`
+                        +`<p class="text-muted mb-0">${user.email}</p>`
+                        +`</div>`
+                        +`</div>`
+                        +`<button onclick="editUser('${id}', '${user.firstName}', '${user.lastName}', '${user.nickName}', '${user.email}', '${user.picURL}')" class="btn btn-link btn-rounded btn-sm" role="button">Edit Profile</button>`
+                        +`</li>`
+                        +`<li class="list-group-item">Nick Name: ${user.nickName}</li>`;
+                    });
+                } else {
+    
+    
+            document.getElementById('addUserForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const nickName = document.getElementById('nickName').value;
+                const email = document.getElementById('email').value;
+
+                const picFile = document.getElementById('picFile');
+                const file = picFile.files[0];  
+
+                if(file){
+
+                    const imgRef = storageRef(storage, `images/${file.name}`);
+
+                try{
+                
+                    uploadBytes(imgRef, file).then((snapshot) => {
+
+                    getDownloadURL(snapshot.ref).then((downloadURL) => {
+                    addUser(firstName, lastName, nickName, email, downloadURL);
+
+                });
+                });
+                
+                } catch(error) {
+                
+                alert('Upload failed:', error);
+                
+                }
+
+                }   else {
+
+                alert("No file is selected!");
+
+                }
+               
+            });
+
+
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+        });
+
+</script>
+
+<div id="profileList"></div>
+<div id="addProfile">
+<h3>Please setup your profile</h3>
+<form id="addUserForm">
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" id="firstName" class="form-control" />
+    <label class="form-label" for="firstName">First Name</label>
+    </div>
+
+
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" id="lastName" class="form-control" />
+    <label class="form-label" for="lastName">Last Name</label></div>
+
+
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" id="nickName" class="form-control" />
+    <label class="form-label" for="nickName">Nick Name</label>
+    </div>
+    
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="email" id="email" class="form-control" />
+    <label class="form-label" for="email">Email</label>
+    </div>
+    
+    <div data-mdb-input-init>
+    <label class="form-label" for="picFile">Upload Profile Picture</label>
+    <input type="file" class="form-control" id="picFile" />
+    </div>
+    <br/>
+    <button data-mdb-ripple-init type="submit" class="btn btn-primary ">Create</button>`
+    </form>
+
+</div>
+
+
+<div id="editProfile">
+<h3>Edit profile</h3>
+<form id="updateUserForm">
+
+    <input type="hidden" id="EuserId" class="form-control" />
+
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" id="EfirstName" class="form-control" />
+    <label class="form-label" for="EfirstName">First Name</label>
+    </div>
+
+
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" id="ElastName" class="form-control" />
+    <label class="form-label" for="ElastName">Last Name</label></div>
+
+
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" id="EnickName" class="form-control" />
+    <label class="form-label" for="EnickName">Nick Name</label>
+    </div>
+    
+    <div data-mdb-input-init class="form-outline mb-4">
+    <input type="email" id="Eemail" class="form-control" />
+    <label class="form-label" for="Eemail">Email</label>
+    </div>
+
+    <div data-mdb-input-init class="form-outline mb-4">
+    <img src="" alt="" style="width: 45px; height: 45px" class="rounded-circle" id="EprofilePic"/>
+    </div>
+
+    <div data-mdb-input-init>
+    <label class="form-label" for="EpicFile">Upload Profile Picture</label>
+    <input type="file" class="form-control" id="EpicFile" />
+    </div>
+    <br/>
+    <button data-mdb-ripple-init type="submit" class="btn btn-primary ">Update</button>`
+    </form>
+
+</div>

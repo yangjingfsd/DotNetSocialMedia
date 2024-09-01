@@ -1,0 +1,122 @@
+@model Post
+
+@{
+    ViewData["Title"] = "Edit Post";
+}
+
+     <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+
+        const firebaseConfig = {
+    apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+    authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+    databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+    projectId: "dotnetsocialmedia-df2ee",
+    storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+    messagingSenderId: "630837754281",
+    appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+    measurementId: "G-VCEN603ERC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const storage = getStorage(app);
+
+        const postsRef = dbRef(database, 'Posts');
+        const imgsRef = storageRef(storage, "images");
+        
+         async function updatePost(postId, userId, title, content, imgURL) {
+            try {
+                const postRef = dbRef(database, 'Posts/' + postId);
+                await update(postRef, { userId, title, content, imgURL});
+                console.log('Post updated');
+                window.location.href="/Main/MyPosts";
+            } catch (error) {
+                console.error('Error message: ', error);
+            }
+        }
+
+  
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('updatePostForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const postId = document.getElementById('postId').value;
+                const userId = document.getElementById('userId').value;
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('content').value;
+                const imgURL = document.getElementById('imgURL').value;
+//                const createTime = new Date();
+                const imgFile = document.getElementById('imgFile');
+                const file = imgFile.files[0];  
+
+                if(file){
+
+                    const imgRef = storageRef(storage, `images/${file.name}`);
+
+                try{
+                
+                    uploadBytes(imgRef, file).then((snapshot) => {
+
+                    getDownloadURL(snapshot.ref).then((downloadURL) => {
+
+                    updatePost(postId, userId, title, content, downloadURL);
+
+                });
+                });
+                
+                } catch(error) {
+                
+                alert('Upload failed:', error);
+                
+                }
+
+                }   else {
+
+                    updatePost(postId, userId, title, content, imgURL);
+
+                }
+               
+            });
+        });
+
+    </script>
+ 
+ <h2>Edit Post</h2>
+
+<form id="updatePostForm">
+
+    <input type="text" name="postId" id="postId" class="form-control" value="@Model.postId" style="display: none;"/>
+    <input type="text" name="userId" id="userId" class="form-control" value="@Model.userId" style="display: none;"/>
+    <input type="text" name="imgURL" id="imgURL" class="form-control" value="@Model.imgURL" style="display: none;"/>
+
+  <div data-mdb-input-init class="form-outline mb-4">
+    <input type="text" name="title" id="title" class="form-control" value="@Model.title"/>
+    <label class="form-label" for="title" >Post Title</label>
+  </div>
+
+  <!-- Message input -->
+  <div data-mdb-input-init class="form-outline mb-4">
+    <input class="form-control" name="content" id="content" value="@Model.content"/>
+    <label class="form-label" for="content">Post Content</label>
+  </div>
+
+   <div data-mdb-input-init class="form-outline mb-4">
+    <img src="@Model.imgURL" height="150">
+  </div>
+
+  <div data-mdb-input-init>
+    <label class="form-label" for="imgFile">Upload picture</label>
+    <input type="file" class="form-control" id="imgFile" />
+  </div>
+
+<br/>
+
+  <!-- Submit button -->
+  <button data-mdb-ripple-init type="submit" class="btn btn-primary ">Update</button>
+
+</form>
+
+
