@@ -2,57 +2,183 @@
     ViewData["Title"] = "Main Page";
 }
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
-        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+    import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
 
-        const firebaseConfig = {
-    apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
-    authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
-    databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
-    projectId: "dotnetsocialmedia-df2ee",
-    storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
-    messagingSenderId: "630837754281",
-    appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
-    measurementId: "G-VCEN603ERC"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+        authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+        databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+        projectId: "dotnetsocialmedia-df2ee",
+        storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+        messagingSenderId: "630837754281",
+        appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+        measurementId: "G-VCEN603ERC"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+    
+    const table = document.getElementById('postTable');
 
-        const postsRef = dbRef(database, 'Posts');
+    const postRootRef = dbRef(database, 'Posts/');
+
+    function loadPosts() {
+        onValue(postRootRef, (snapshot) => {
+
+            const directorys = snapshot.val();
+
+            if(directorys){
+            
+                Object.keys(directorys).forEach(directory => {
+
+                    const postsRef = dbRef(database, `Posts/${directory}`);
+
+                    onValue(postsRef, (postsnapshot) => {
+
+                        const posts = postsnapshot.val();
+
+                        if (posts) {
+                            Object.keys(posts).forEach(id => {
+
+              onAuthStateChanged(auth, (user) => {
+                if (user) {
+
+                                const post = posts[id];
+
+                                const row = table.insertRow();
 
 
-        function loadPosts() {
-            onValue(postsRef, (snapshot) => {
-                const posts = snapshot.val();
-                const table = document.getElementById('postTable');
-                table.innerHTML = '';
+                                var cell = `<h3>${post.title}</h3><p><img src="${post.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle"/>&nbsp;${post.userId}&nbsp;&nbsp;`
 
-                if (posts) {
-                    Object.keys(posts).forEach(id => {
+if(directory !== user.uid) { 
+    cell = cell + `<button type="button" class="btn btn-outline-warning btn-rounded" data-mdb-ripple-init  data-mdb-ripple-color="dark" onclick="makeFollow('Followers/${directory}','${user.uid}','${user.photoURL}','${user.displayName}');">Follow</button></p>`;
+} 
+                             
+                                cell = cell + `<p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`;
 
-                        const post = posts[id];
-                        const row = table.insertRow();
-                        row.insertCell(0).innerHTML = `<h3>${post.title}</h3><p>${post.userId}</p><p>${post.content}</p>`
-                        +`<p><img src="${post.imgURL}" height="150"></p><p>${id}</p>`
-                        +`<p><span style="font-size:100%;color:red;">&hearts;</span>&nbsp;3</p>`
-                        +`<p><img src="https://mdbootstrap.com/img/new/avatars/6.jpg" alt="" style="width: 35px; height: 35px" class="rounded-circle" />&nbsp;Nice recipe!</p>`;
-                    });
+                                const likesRef = dbRef(database, `Posts/${directory}/${id}/likes`)
+
+                                onValue(likesRef,(likeSnapshot)=>{
+                                    const likes = likeSnapshot.val();
+                                    if(likes){
+                                        const count = Object.keys(likes).length;
+                                        cell = cell + `<p><button onclick="makeLike('Posts/${directory}/${id}/likes','${user.uid}');" style="font-size:150%;color:red;">&hearts;</button>&nbsp;${count}</p>`;
+                                    }else{
+                                        cell = cell + `<p><button onclick="makeLike('Posts/${directory}/${id}/likes','${user.uid}');" style="font-size:150%;color:red;">&hearts;</button>&nbsp;0</p>`;
+                                        console.log("No likes yet!");
+                                    }
+                                });
+
+                                cell = cell + `<p class="d-flex justify-content-center">`                                      
+                                +`<div class="input-group w-auto">`                                      
+                                +`<input type="text" class="form-control" id="${id}" placeholder="Make a comment" aria-label="Make a comment" aria-describedby="button-addon1"/>`                                      
+                                +`<button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary" type="button" id="button-addon1" data-mdb-ripple-color="dark" onclick="makeComment('Posts/${directory}/${id}/comments', '${id}', '${user.uid}','${user.photoURL}');">Post</button>`                                      
+                                +`</div>`
+                                +`</p>`;                                      
+
+
+
+                                const commentsRef = dbRef(database, `Posts/${directory}/${id}/comments`)
+
+                                onValue(commentsRef,(comSnapshot)=>{
+                                    const comments = comSnapshot.val();
+                                    if(comments){
+                                        Object.keys(comments).forEach(comid => {
+                                            const comment = comments[comid];
+                                            cell =  cell + `<p><img src="${comment.photoURL}" alt="" style="width: 20px; height: 20px" class="rounded-circle"/>&nbsp;${comment.content}<p>`;                                      
+                                        });
+                                    }else{
+                                        console.log("No comments yet!");
+                                    }
+                                });
+
+                                row.insertCell(0).innerHTML =  cell;
+
+                } else {
+                  console.log("User logged out!");
                 }
-            });
-        }
+              });
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadPosts();
+                            });
+
+
+                        } else {
+                            console.log("No post in this directory");
+                        }
+                    });
+
+                });
+
+
+            } else {
+
+                alert("No direcoties yet!");
+            }
         });
+    }
 
+    window.makeComment = function (commentDir, id, uid, photoURL) {
+        const content = document.getElementById(id).value;
+        const fcommentsRef = dbRef(database, commentDir);
+        addComment(fcommentsRef, content, uid, photoURL);
+        document.getElementById(id).value = '';
+        window.location.href="/Main/homepage";
+    };
+
+    async function addComment(commentsRef, content, uid, photoURL) {
+        try {
+            const newCommentRef = push(commentsRef);
+            await set(newCommentRef, {uid, content, photoURL});
+            console.log('Comment posted!');
+        } catch (error) {
+            console.error('Error message: ', error);
+        }
+    }
+
+    window.makeFollow = function (followDir, uid, photoURL, displayName) {
+        const followsRef = dbRef(database, followDir);
+        addFollow(followsRef, uid, photoURL, displayName);
+        alert("Followed!");
+    };
+
+    async function addFollow(followsRef, uid, photoURL, displayName) {
+        try {
+            const newFollowRef = push(followsRef);
+            await set(newFollowRef, {uid, photoURL, displayName});
+            console.log('Follower added!');
+        } catch (error) {
+            console.error('Error message: ', error);
+        }
+    }
+
+    window.makeLike = function (likeDir, uid) {
+        const likesRef = dbRef(database, likeDir);
+        addLike(likesRef,uid);
+        window.location.href="/Main/homepage";
+    }
+
+    async function addLike(likesRef, uid) {
+        try {
+            const newLikeRef = push(likesRef);
+            await set(newLikeRef, {uid});
+            console.log('Comment posted!');
+        } catch (error) {
+            console.error('Error message: ', error);
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        table.innerHTML = '';
+        loadPosts();
+    });
 
 </script>
 
 <table class="table" id="postTable">
-        <tr>
-            <th>&nbsp;</th>
-        </tr>
 
 </table>

@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/jing/Downloads/DotnetSocialMedia/DotnetSocialMedia.csproj",
+      "projectUniqueName": "/Users/jing/Downloads/DotnetSocialMedia/DotNetSocialMedia/DotnetSocialMedia.csproj",
       "projectName": "DotnetSocialMedia",
-      "projectPath": "/Users/jing/Downloads/DotnetSocialMedia/DotnetSocialMedia.csproj",
+      "projectPath": "/Users/jing/Downloads/DotnetSocialMedia/DotNetSocialMedia/DotnetSocialMedia.csproj",
       "packagesPath": "/Users/jing/.nuget/packages/",
-      "outputPath": "/Users/jing/Downloads/DotnetSocialMedia/obj/",
+      "outputPath": "/Users/jing/Downloads/DotnetSocialMedia/DotNetSocialMedia/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/jing/.nuget/NuGet/NuGet.Config"

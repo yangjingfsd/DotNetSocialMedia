@@ -2,12 +2,13 @@
     ViewData["Title"] = "Create Post";
 }
 
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
-        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+  import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
 
-        const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
     authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
     databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
@@ -16,67 +17,74 @@
     messagingSenderId: "630837754281",
     appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
     measurementId: "G-VCEN603ERC"
-        };
+  };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const storage = getStorage(app);
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  const storage = getStorage(app);
+  const auth = getAuth(app);
 
-        const postsRef = dbRef(database, 'Posts');
-        const imgsRef = storageRef(storage, "images");
-        
-        async function addPost(userId, title, content, imgURL) {
-            try {
-                const newPostRef = push(postsRef);
-                await set(newPostRef, { userId, title, content, imgURL });
-                console.log('Post created!');
-                window.location.href="/Main/homepage";
-            } catch (error) {
-                console.error('Error message: ', error);
-            }
-        }
-  
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('addPostForm').addEventListener('submit', (event) => {
-                event.preventDefault();
+  const imgsRef = storageRef(storage, "images");
 
-                const userId ="John";
-                const title = document.getElementById('title').value;
-                const content = document.getElementById('content').value;
-//                const createTime = new Date();
-                const imgFile = document.getElementById('imgFile');
-                const file = imgFile.files[0];  
+  async function addPost(postsRef, userId, title, content, imgURL, uid, photoURL) {
+  try {
+    const newPostRef = push(postsRef);
+    await set(newPostRef, { userId, title, content, imgURL, uid, photoURL});
+    console.log('Post created!');
+    window.location.href="/Main/MyPosts";
+  } catch (error) {
+    console.error('Error message: ', error);
+  }
+  }
 
-                if(file){
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('addPostForm').addEventListener('submit', (event) => {
+      event.preventDefault();
 
-                    const imgRef = storageRef(storage, `images/${file.name}`);
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+      const imgFile = document.getElementById('imgFile');
+      const file = imgFile.files[0];  
 
-                try{
-                
-                    uploadBytes(imgRef, file).then((snapshot) => {
+      if(file){
 
-                    getDownloadURL(snapshot.ref).then((downloadURL) => {
-                    addPost(userId, title, content, downloadURL);
+        const imgRef = storageRef(storage, `images/${file.name}`);
 
-                });
-                });
-                
-                } catch(error) {
-                
-                alert('Upload failed:', error);
-                
+        try{
+
+          uploadBytes(imgRef, file).then((snapshot) => {
+
+            getDownloadURL(snapshot.ref).then((downloadURL) => {
+
+              onAuthStateChanged(auth, (user) => {
+                if (user) {
+
+                  const postsRef = dbRef(database, `Posts/${user.uid}`);
+                  addPost(postsRef, user.displayName, title, content, downloadURL, user.uid, user.photoURL);
+
+                } else {
+                  console.log("User logged out!");
                 }
-
-                }   else {
-
-                alert("No file is selected!");
-
-                }
-               
+              });
             });
-        });
+          });
 
-    </script>
+        } catch(error) {
+
+        console.log('Upload failed:', error);
+
+        }
+
+      }   else {
+
+        alert("No file is selected!");
+
+      }
+
+    });
+  });
+
+</script>
 
 <h2>Create a Post</h2>
 

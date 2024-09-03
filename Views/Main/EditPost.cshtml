@@ -4,12 +4,13 @@
     ViewData["Title"] = "Edit Post";
 }
 
-     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
-        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+  import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
 
-        const firebaseConfig = {
+  const firebaseConfig = {
     apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
     authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
     databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
@@ -18,72 +19,77 @@
     messagingSenderId: "630837754281",
     appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
     measurementId: "G-VCEN603ERC"
-        };
+  };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const storage = getStorage(app);
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  const storage = getStorage(app);
+  const auth = getAuth(app);
 
-        const postsRef = dbRef(database, 'Posts');
-        const imgsRef = storageRef(storage, "images");
-        
-         async function updatePost(postId, userId, title, content, imgURL) {
-            try {
-                const postRef = dbRef(database, 'Posts/' + postId);
-                await update(postRef, { userId, title, content, imgURL});
-                console.log('Post updated');
-                window.location.href="/Main/MyPosts";
-            } catch (error) {
-                console.error('Error message: ', error);
-            }
+  const postsRef = dbRef(database, 'Posts');
+  const imgsRef = storageRef(storage, "images");
+    
+  async function updatePost(uid, postId, userId, title, content, imgURL, photoURL) {
+    try {
+        const postRef = dbRef(database, `Posts/${uid}/` + postId);
+        await update(postRef, { userId, title, content, imgURL, uid, photoURL});
+        console.log('Post updated');
+        window.location.href="/Main/MyPosts";
+    } catch (error) {
+        console.error('Error message: ', error);
+    }
+  }
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('updatePostForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const postId = document.getElementById('postId').value;
+      const userId = document.getElementById('userId').value;
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+      const imgURL = document.getElementById('imgURL').value;
+
+      const imgFile = document.getElementById('imgFile');
+      const file = imgFile.files[0];  
+
+      if(file){
+        const imgRef = storageRef(storage, `images/${file.name}`);
+        try{
+          uploadBytes(imgRef, file).then((snapshot) => {
+            getDownloadURL(snapshot.ref).then((downloadURL) => {
+
+              onAuthStateChanged(auth, (user) => {
+                if (user) {
+                  updatePost(user.uid, postId, userId, title, content, downloadURL, user.photoURL);
+                } else {
+                  console.log("User logged out!");
+                }
+              });
+
+            });
+          });
+          
+        } catch(error) {
+          alert('Upload failed:', error);
         }
 
-  
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('updatePostForm').addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const postId = document.getElementById('postId').value;
-                const userId = document.getElementById('userId').value;
-                const title = document.getElementById('title').value;
-                const content = document.getElementById('content').value;
-                const imgURL = document.getElementById('imgURL').value;
-//                const createTime = new Date();
-                const imgFile = document.getElementById('imgFile');
-                const file = imgFile.files[0];  
-
-                if(file){
-
-                    const imgRef = storageRef(storage, `images/${file.name}`);
-
-                try{
-                
-                    uploadBytes(imgRef, file).then((snapshot) => {
-
-                    getDownloadURL(snapshot.ref).then((downloadURL) => {
-
-                    updatePost(postId, userId, title, content, downloadURL);
-
-                });
-                });
-                
-                } catch(error) {
-                
-                alert('Upload failed:', error);
-                
-                }
-
-                }   else {
-
-                    updatePost(postId, userId, title, content, imgURL);
-
-                }
-               
-            });
+      } else {
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+              updatePost(user.uid, postId, userId, title, content, imgURL, user.photoURL);
+          } else {
+            console.log("User logged out!");
+          }
         });
+      }
+          
+    });
+  });
 
-    </script>
- 
+</script>
+
  <h2>Edit Post</h2>
 
 <form id="updatePostForm">
