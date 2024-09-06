@@ -35,25 +35,27 @@
             
                 Object.keys(directorys).forEach(directory => {
 
-//                    const postsRef = dbRef(database, `Posts/${directory}`);
                     const postsRef = query(dbRef(database, `Posts/${directory}`), orderByChild('createdAt'));
 
                     onValue(postsRef, (postsnapshot) => {
 
                         const posts = postsnapshot.val();
-//                        posts.reverse();
                         
+                        var numpost = posts.length;
+
                         if (posts) {
 
                             Object.keys(posts).forEach(id => {
-alert(id);
+
                             onAuthStateChanged(auth, (user) => {
                                 if (user) {
 
                                     const post = posts[id];
 
-                                    const row = table.insertRow();
-
+                                    const row = table.insertRow(numpost);
+                                    
+                                    numpost = numpost - 1;
+                                    
                                     const date = new Date(post.createdAt);
 
                                     var cell = `<h3>${post.title}</h3><p><img src="${post.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle"/>&nbsp;${post.userId}&nbsp;&nbsp;`
@@ -70,17 +72,17 @@ alert(id);
                                     onValue(likesRef,(likeSnapshot)=>{
                                         const likes = likeSnapshot.val();
                                         const count = likes? Object.keys(likes).length : 0;
-                                        cell = cell + `<p><button onclick="makeLike('Posts/${directory}/${id}/likes','${user.uid}');" style="font-size:150%;color:red;">&hearts;</button>&nbsp;&nbsp;&nbsp;${count}&nbsp;&nbsp;&nbsp;&nbsp;`;
+                                        cell = cell + `<p><button onclick="makeLike('Posts/${directory}/${id}/likes','${user.uid}');" style="font-size:150%;color:red;">&hearts;</button>&nbsp;&nbsp;&nbsp;${count}</p>`;
                                     });
 
-                                    const unlikesRef = dbRef(database, `Posts/${directory}/${id}/unlikes`)
+@*                                     const unlikesRef = dbRef(database, `Posts/${directory}/${id}/unlikes`)
 
                                     onValue(unlikesRef,(unlikeSnapshot)=>{
                                         const unlikes = unlikeSnapshot.val();
                                         const uncount = unlikes? Object.keys(unlikes).length : 0;
                                         cell = cell + `<button onclick="makeunLike('Posts/${directory}/${id}/unlikes','${user.uid}');" style="font-size:150%;color:red;">&#128078;</button>&nbsp;&nbsp;&nbsp;${uncount}</p>`;
                                     });
-
+ *@
                                     cell = cell + `<p class="d-flex justify-content-center">`                                      
                                     +`<div class="input-group w-auto">`                                      
                                     +`<label for="button-addon1"><img src="${user.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle"/>&nbsp;</label><input type="text" class="form-control" id="${id}" placeholder="Make a comment" aria-label="Make a comment" aria-describedby="button-addon1"/>`                                      
@@ -172,7 +174,6 @@ alert(id);
     async function addLike(likesRef, uid) {
         try {
             const newLikeRef = push(likesRef);
-            alert(likesRef);
             await set(newLikeRef, {uid});
             console.log('Like counted!');
         } catch (error) {
