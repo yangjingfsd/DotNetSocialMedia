@@ -2,166 +2,238 @@
     ViewData["Title"] = "My Profile";
 }
 
-     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
-        import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
-        import { getAuth, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js';
+    import { getDatabase, ref as dbRef, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js';
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-storage.js";
+    import { getAuth, onAuthStateChanged, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js';
 
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
-            authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
-            databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
-            projectId: "dotnetsocialmedia-df2ee",
-            storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
-            messagingSenderId: "630837754281",
-            appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
-            measurementId: "G-VCEN603ERC"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyB8WcalDpquZO5Xhq2fgCP7rA3IC-Qdfvg",
+        authDomain: "dotnetsocialmedia-df2ee.firebaseapp.com",
+        databaseURL: "https://dotnetsocialmedia-df2ee-default-rtdb.firebaseio.com",
+        projectId: "dotnetsocialmedia-df2ee",
+        storageBucket: "dotnetsocialmedia-df2ee.appspot.com",
+        messagingSenderId: "630837754281",
+        appId: "1:630837754281:web:99bc8cc7376d26b3b6acb8",
+        measurementId: "G-VCEN603ERC"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const storage = getStorage(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const storage = getStorage(app);
+    const auth = getAuth(app);
 
-        const editprofile = document.getElementById('editProfile');
-        const profile = document.getElementById('profileList');
+    const editprofile = document.getElementById('editProfile');
+    const profile = document.getElementById('profileList');
 
-        window.editProfile = function () {
+    window.editProfile = function () {
 
-            editprofile.style.display = 'revert'; 
-            profile.style.display = 'none';
+        editprofile.style.display = 'revert'; 
+        profile.style.display = 'none';
 
         onAuthStateChanged(auth, (usercur) => {
-        if (usercur) {
-            document.getElementById('EprofilePic').src = usercur.photoURL;
-            document.getElementById('EfirstName').value = ((usercur.displayName).split(" "))[0];
-            document.getElementById('ElastName').value = ((usercur.displayName).split(" "))[1];
-          } else {
-        console.log("User logged out!");
-          }
+            if (usercur) {
+                document.getElementById('EprofilePic').src = usercur.photoURL;
+                document.getElementById('EfirstName').value = ((usercur.displayName).split(" "))[0];
+                document.getElementById('ElastName').value = ((usercur.displayName).split(" "))[1];
+            } else {
+                console.log("User logged out!");
+            }
         });
 
-            document.getElementById('updateProfileForm').addEventListener('submit', (event) => {
-                event.preventDefault();
+    }
 
-                const firstName = document.getElementById('EfirstName').value;
-                const lastName = document.getElementById('ElastName').value;
 
-                const picFile = document.getElementById('EpicFile');
-                const file = picFile.files[0];  
+    window.updateProfile = function(){
 
-                if(file){
+        const firstName = document.getElementById('EfirstName').value;
+        const lastName = document.getElementById('ElastName').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const oldPassword = document.getElementById('oldPassword').value;
 
-                    const imgRef = storageRef(storage, `images/${file.name}`);
+        const picFile = document.getElementById('EpicFile');
+        const file = picFile.files[0];  
 
-                try{
-                
-                    uploadBytes(imgRef, file).then((snapshot) => {
+        if(file){
 
-                        getDownloadURL(snapshot.ref).then((downloadURL) => {
+            const imgRef = storageRef(storage, `images/${file.name}`);
 
-                            updateProfile(auth.currentUser, {
+            try{
+
+                uploadBytes(imgRef, file).then((snapshot) => {
+
+                    getDownloadURL(snapshot.ref).then((downloadURL) => {
+
+                        updateProfile(auth.currentUser, {
                             displayName: `${firstName} ${lastName}`, photoURL: `${downloadURL}`
-                            }).then(() => {
+                        }).then(() => {
                             alert("Profile picture and displayname updated.");
-                window.location.href="/Main/Profile";
-                            }).catch((error) => {
+                            window.location.href="/Main/Profile";
+                        }).catch((error) => {
                             consol.log("Error Message: ", error);
-                            });
-  
                         });
+
+
                     });
-                
-                } catch(error) {
-                
+                });
+
+            } catch(error) {
+
                 alert('Upload failed:', error);
-                
-                }
 
-                }   else {
+            }
 
-        onAuthStateChanged(auth, (usercur) => {
-        if (usercur) {
+        }   else {
 
+            onAuthStateChanged(auth, (usercur) => {
+
+                if (usercur) {
 
                     updateProfile(auth.currentUser, {
-                      displayName: `${firstName} ${lastName}`, photoURL: `${usercur.photoURL}`
+                    displayName: `${firstName} ${lastName}`, photoURL: `${usercur.photoURL}`
                     }).then(() => {
-                        alert("Profile picture and displayname updated.");
-                    window.location.href="/Main/Profile";
-                }).catch((error) => {
-                    consol.log("Error Message: ", error);
-                    });
 
+                        alert("Displayname updated.");
+                        window.location.href="/Main/Profile";
 
+@*                         try{
 
-          } else {
-        console.log("User logged out!");
-          }
-        });
+                            const credential = EmailAuthProvider.credential(usercur.email,oldPassword);
 
+                            reauthenticateWithCredential(usercur, credential)
+                            .then(() => {
 
+                                if(newPassword){
+                                    updatePassword(usercur, newPassword).then(() => {
+                                        alert("Password is changed!");  
+                                        window.location.href="/Main/Profile";
+                                    }).catch((error) => {
+                                        alert(error.message);
+                                    });
+                                } else {
+                                    alert("Please input new password.");
+                                }
 
-                }
+                            }).catch((error) => {
+                                alert(error.message);
+                            });            
 
-               
-            });
+                        } catch(error) {
 
-        };
+                            alert(error.message);
 
-        function loadProfile() {
-                        profile.innerHTML = '';
+                        }
+ *@
+                    }).catch((error) => {
+                        alert(error.message);
+                    });    
 
-        onAuthStateChanged(auth, (user) => {
-        if (user) {
-
-                        var profileCont = `<ul class="list-group list-group-light">`
-                        +`<li class="list-group-item d-flex justify-content-between align-items-center">`
-                        +`<div class="d-flex align-items-center">`
-                        +`<img src=${user.photoURL} alt="" style="width: 45px; height: 45px" class="rounded-circle" />`
-                        +`<div class="ms-3">`
-                        +`<p class="fw-bold mb-1">${user.displayName}</p>`
-                        +`<p class="text-muted mb-0">${user.email}</p>`
-                        +`</div>`
-                        +`</div>`
-                        +`<button onclick="editProfile();" class="btn btn-link btn-rounded btn-sm" role="button">Edit Profile</button>`
-                        +`</li>`;
-
-                    profileCont = profileCont + `<hr>`;
-
-            const followsRef = dbRef(database, `Followers/${user.uid}`);
-
-            onValue(followsRef, (snapshot) => {
-                const follows = snapshot.val();
-                if(follows){
-
-                    Object.keys(follows).forEach(id => {
-                        const follower = follows[id];
-                        profileCont = profileCont + `<p><img src=${follower.photoURL} alt="" style="width: 45px; height: 45px" class="rounded-circle" />&nbsp;${follower.displayName}<\p>`
-                    })
-
-                                            profile.innerHTML = profileCont;
-
-                }else{
-                    console.log("No follower yet.");
+                } else {
+                    console.log("User logged out!");
                 }
             });
-                
-
-        } else {
-        console.log("User logged out!");
-        }
-
-        });
         
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProfile();
-            editprofile.style.display = 'none'; 
-      });
+
+    }
+
+
+
+
+    async function loadProfile() {
+
+
+        onAuthStateChanged(auth, (user) => {
+
+
+
+            if (user) {
+
+                profile.innerHTML = '';
+
+                var profileCont = `<ul class="list-group list-group-light">`
+                +`<li class="list-group-item d-flex justify-content-between align-items-center">`
+                +`<div class="d-flex align-items-center">`
+                +`<img src="${user.photoURL? user.photoURL : '#'}" alt="" style="width: 45px; height: 45px" class="rounded-circle" />`
+                +`<div class="ms-3">`
+                +`<p class="fw-bold mb-1">${user.displayName}</p>`
+                +`<p class="text-muted mb-0">${user.email}</p>`
+                +`</div>`
+                +`</div>`
+                +`<button onclick="editProfile();" class="btn btn-link btn-rounded btn-sm" role="button">Edit Profile</button>`
+                +`</li></ul>`;
+
+                profileCont = profileCont + `<hr><p>Followers:</p>`;
+
+                const followsRef = dbRef(database, `Followers/${user.uid}`);
+
+                onValue(followsRef, (snapshot) => {
+
+                    const follows = snapshot.val();
+
+                    if(follows){
+                        
+                        Object.keys(follows).forEach(id => {
+                                const follower = follows[id];
+                                profileCont = profileCont + `<p><img src=${follower.photoURL} alt="" style="width: 45px; height: 45px" class="rounded-circle" />&nbsp;${follower.displayName}&nbsp;`
+                                +`<button type="button" class="btn btn-outline-warning btn-rounded" data-mdb-ripple-init  data-mdb-ripple-color="dark" onclick="deleteFollow('Followers/${user.uid}/${id}');">Unfollow</button><\p>`;
+                        })
+
+                    }else{
+                        profileCont = profileCont + `<p style="color:yellow;">No follower yet.</p>`;
+                    }
+
+                    profile.innerHTML = profileCont;
+
+                });
+
+
+            } else {
+    
+                alert("User logged out!");
+    
+            }
+
+        });
+
+    };
+
+    async function deleteFollowFun(followDir) {
+        try {
+            const followRef = dbRef(database, followDir);
+
+          const userConfirmed = confirm("Confirm to unfollow?");
+
+            if (userConfirmed) {
+                await remove(followRef);
+                alert('Follower deleted ');
+            } else {
+                alert("Unfollow cancelled.");
+            }
+
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    window.deleteFollow = function (followDir) {
+
+        deleteFollowFun(followDir);
+        window.location.href="/Main/Profile";
+
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProfile();
+        editprofile.style.display = 'none'; 
+    });
+
+
+
 
 </script>
 
@@ -169,7 +241,6 @@
 
 <div id="editProfile">
 <h3>Edit profile</h3>
-<form id="updateProfileForm">
 
     <div data-mdb-input-init class="mb-4">
     <label>First Name: </label>
@@ -180,7 +251,17 @@
     <label>Last Name:</label>
     <input type="text" id="ElastName" class="form-control" />
     </div>
-    
+
+     <div data-mdb-input-init class="mb-4">
+    <label>Old Password:</label>
+    <input type="password" id="oldPassword" class="form-control" />
+    </div>
+
+    <div data-mdb-input-init class="mb-4">
+    <label>New Password:</label>
+    <input type="password" id="newPassword" class="form-control" />
+    </div>
+ 
     <div data-mdb-input-init class="form-outline mb-4">
     <img src="" alt="" style="width: 45px; height: 45px" class="rounded-circle" id="EprofilePic"/>
     </div>
@@ -190,8 +271,7 @@
     <input type="file" class="form-control" id="EpicFile" />
     </div>
     <br/>
-    <button data-mdb-ripple-init type="submit" class="btn btn-primary">Update</button>
-    </form>
+    <button data-mdb-ripple-init class="btn btn-primary" onclick=updateProfile();>Update</button>
 
 </div>
 

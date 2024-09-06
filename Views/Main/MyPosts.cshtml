@@ -40,7 +40,8 @@
                     Object.keys(posts).forEach(id => {
                         const post = posts[id];
                         const row = table.insertRow();
-                        row.insertCell(0).innerHTML = `<h3>${post.title}</h3><p><img src="${user.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle" />&nbsp;&nbsp;${post.userId}</p><p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`
+                        const date = new Date(post.createdAt);
+                        row.insertCell(0).innerHTML = `<h3>${post.title}</h3><p><img src="${user.photoURL}" alt="" style="width: 35px; height: 35px" class="rounded-circle" />&nbsp;&nbsp;${post.userId}&nbsp;&nbsp;${date.toLocaleString()}</p><p>${post.content}</p><p><img src="${post.imgURL}" height="150"></p>`
                         +`<p><button onclick="deletePost('${id}');" data-mdb-button-init data-mdb-ripple-init class="btn btn-danger">Delete</button></p>`
                         +`<form action="EditPost" method="post">`
                         +`<input name="postId" type="hidden" value="${id}"/>`
@@ -48,8 +49,9 @@
                         +`<input name="title" type="hidden" value="${post.title}"/>`
                         +`<input name="content" type="hidden" value="${post.content}"/>`
                         +`<input name="imgURL" type="hidden" value="${post.imgURL}"/>`
+                        +`<input name="createdAt" type="hidden" value="${post.createdAt}"/>`
                         +`<button type="submit" class="btn btn-primary">Edit</button>`
-                        +`</form>`
+                        +`</form>`;
                     });
                 }
             });
@@ -65,8 +67,15 @@
         async function deletePostfun(uid,postId) {
             try {
                 const postRef = dbRef(database, `Posts/${uid}/` + postId);
-                await remove(postRef);
-                console.log('Post deleted ');
+
+                const userConfirmed = confirm("Confirm to delete?");
+                if (userConfirmed) {
+                    await remove(postRef);
+                    alert('Post deleted!');
+                } else {
+                    alert("Cancelled.");
+                }
+
             } catch (error) {
                 console.error('Error message: ', error);
             }
@@ -74,17 +83,17 @@
 
         window.deletePost = function (id) {
 
-        onAuthStateChanged(auth, (user) => {
-        if (user) {
+            onAuthStateChanged(auth, (user) => {
+            if (user) {
 
-            deletePostfun(user.uid,id);
+                deletePostfun(user.uid,id);
 
-          } else {
-        console.log("User logged out!");
-          }
-        });
+            } else {
+            console.log("User logged out!");
+            }
+            });
 
-        };
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadPosts();

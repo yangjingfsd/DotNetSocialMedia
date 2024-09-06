@@ -7,7 +7,7 @@ public required string userId {set; get;}
 public required string title {set; get;}
 public required string content {set; get;}
 public required string imgURL {set; get;}
-// public DateTime createTime {set; get;}
+
 }
 
 }
